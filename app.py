@@ -1,5 +1,5 @@
 from __future__ import with_statement
-
+import markdown
 try:
     import MySQLdb
     from MySQLdb.cursors import DictCursor
@@ -22,7 +22,7 @@ import json, os, hashlib, tempfile, subprocess
 config = {}
 
 app = Flask(__name__, static_url_path='')
-app.cache = memcache.Client(['localhost:11211'], debug=0)
+app.cache = memcache.Client(['localhost:11212'], debug=0)
 app.session_interface = Session()
 app.session_cookie_name = "isucon_session"
 app.wsgi_app = ProxyFix(app.wsgi_app)
@@ -71,14 +71,18 @@ def require_user(user):
         redirect(url_for("top_page"))
         abort()
 
-
 def gen_markdown(md):
-    temp = tempfile.NamedTemporaryFile()
-    temp.write(bytes(md, 'UTF-8'))
-    temp.flush()
-    html = subprocess.getoutput("../bin/markdown %s" % temp.name)
-    temp.close()
+    codehilite = 'codehilite(force_linenos=True, guess_lang=False, css_class=syntax)'
+    html = markdown.markdown(md, ['extra', codehilite])
     return html
+
+#def gen_markdown(md):
+#    temp = tempfile.NamedTemporaryFile()
+#    temp.write(bytes(md, 'UTF-8'))
+#    temp.flush()
+#    html = subprocess.getoutput("../bin/markdown %s" % temp.name)
+#    temp.close()
+#    return html
 
 def get_db():
     top = _app_ctx_stack.top
@@ -266,7 +270,7 @@ def memo_post():
 
 if __name__ == "__main__":
     load_config()
-    port = int(os.environ.get("PORT", '5000'))
+    port = int(os.environ.get("PORT", '5001'))
     app.run(debug=1, host='0.0.0.0', port=port)
 else:
     load_config()
