@@ -50,7 +50,7 @@ def get_user():
     user = None
     if user_id:
         cur = get_db().cursor()
-        cur.execute("SELECT * FROM users WHERE id=%s", user_id)
+        cur.execute("SELECT id FROM users WHERE id=%s", user_id)
         user = cur.fetchone()
         cur.close()
     if user:
@@ -106,11 +106,10 @@ def top_page():
     cur.execute('SELECT count(*) AS c FROM memos WHERE is_private=0')
     total = cur.fetchone()['c']
 
-    cur.execute("SELECT * FROM memos WHERE is_private=0 ORDER BY created_at DESC, id DESC LIMIT 100")
+    cur.execute("SELECT id, user, content, created_at FROM memos WHERE is_private=0 ORDER BY created_at DESC, id DESC LIMIT 100")
     memos = cur.fetchall()
     for memo in memos:
-        cur.execute('SELECT username FROM users WHERE id=%s', memo["user"])
-        memo['username'] = cur.fetchone()['username']
+        memo['username'] = "isucon" + str(memo['user'])
 
     cur.close()
 
